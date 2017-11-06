@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        StrictMode.setThreadPolicy(StrictMode.ThreadPolicy.LAX);
 
         mSearchBoxEditText = (EditText) findViewById(R.id.et_search_box);
 
