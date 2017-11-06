@@ -23,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        // TODO: this will not compile since we removed the id attribute in the xml layout
+        // setContentView(R.activity_main);
     }
 }
