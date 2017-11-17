@@ -26,6 +26,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 
+import com.example.android.todolist.data.TaskContract.TaskEntry;
+
 import static com.example.android.todolist.data.TaskContract.TaskEntry.TABLE_NAME;
 
 // Verify that TaskContentProvider extends from ContentProvider and implements required methods
@@ -96,7 +98,7 @@ public class TaskContentProvider extends ContentProvider {
                 // Inserting values into tasks table
                 long id = db.insert(TABLE_NAME, null, values);
                 if ( id > 0 ) {
-                    returnUri = ContentUris.withAppendedId(TaskContract.TaskEntry.CONTENT_URI, id);
+                    returnUri = ContentUris.withAppendedId(TaskEntry.CONTENT_URI, id);
                 } else {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 }
@@ -156,14 +158,26 @@ public class TaskContentProvider extends ContentProvider {
     @Override
     public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
 
-        // TODO (1) Get access to the database and write URI matching code to recognize a single item
+        // DONE (1) Get access to the database and write URI matching code to recognize a single item
+        final SQLiteDatabase db = mTaskDbHelper.getWritableDatabase();
+        int noOfDeletedRows;
+        final int match = sUriMatcher.match(uri);
+        switch (match) {
+            case TASK_WITH_ID:
+                // DONE (2) Write the code to delete a single row of data
+                // [Hint] Use selections to delete an item by its row ID
+                String id = uri.getPathSegments().get(1);
+                final String idSelection = TaskEntry._ID+"=?";
+                final String[] idSelectionArgs = new String[]{id};
+                noOfDeletedRows = db.delete(TABLE_NAME, idSelection, idSelectionArgs);
+                break;
 
-        // TODO (2) Write the code to delete a single row of data
-        // [Hint] Use selections to delete an item by its row ID
+             default:   throw new UnsupportedOperationException("Unhandled URI: "+uri);
+        }
 
-        // TODO (3) Notify the resolver of a change and return the number of items deleted
-
-        throw new UnsupportedOperationException("Not yet implemented");
+        // DONE (3) Notify the resolver of a change and return the number of items deleted
+        getContext().getContentResolver().notifyChange(uri, null);
+        return noOfDeletedRows;
     }
 
 
