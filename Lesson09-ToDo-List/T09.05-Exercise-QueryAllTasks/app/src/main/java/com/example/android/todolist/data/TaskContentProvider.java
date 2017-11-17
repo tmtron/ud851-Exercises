@@ -26,6 +26,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 
+import com.example.android.todolist.data.TaskContract.TaskEntry;
+
 import static com.example.android.todolist.data.TaskContract.TaskEntry.TABLE_NAME;
 
 // Verify that TaskContentProvider extends from ContentProvider and implements required methods
@@ -96,7 +98,7 @@ public class TaskContentProvider extends ContentProvider {
                 // Inserting values into tasks table
                 long id = db.insert(TABLE_NAME, null, values);
                 if ( id > 0 ) {
-                    returnUri = ContentUris.withAppendedId(TaskContract.TaskEntry.CONTENT_URI, id);
+                    returnUri = ContentUris.withAppendedId(TaskEntry.CONTENT_URI, id);
                 } else {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 }
@@ -120,15 +122,30 @@ public class TaskContentProvider extends ContentProvider {
     public Cursor query(@NonNull Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
 
-        // TODO (1) Get access to underlying database (read-only for query)
+        // DONE (1) Get access to underlying database (read-only for query)
+        final SQLiteDatabase db = mTaskDbHelper.getReadableDatabase();
 
-        // TODO (2) Write URI match code and set a variable to return a Cursor
+        // DONE (2) Write URI match code and set a variable to return a Cursor
+        final int match = sUriMatcher.match(uri);
+        // DONE (3) Query for the tasks directory and write a default case
+        switch (match) {
+            case TASKS:
+                final Cursor cursor = db.query(TaskEntry.TABLE_NAME
+                        , projection
+                        , selection
+                        , selectionArgs
+                        , null
+                        , null
+                        , sortOrder);
+                // DONE (4) Set a notification URI on the Cursor and return that Cursor
+                // so if any content changes in the underlying data (e.g. because some other app called insert/delete
+                // the cursor will be notified
+                final Context context = getContext();
+                if (context != null) cursor.setNotificationUri(context.getContentResolver(), uri);
+                return cursor;
 
-        // TODO (3) Query for the tasks directory and write a default case
-
-        // TODO (4) Set a notification URI on the Cursor and return that Cursor
-
-        throw new UnsupportedOperationException("Not yet implemented");
+            default:    throw new UnsupportedOperationException("Unknown Uri "+uri);
+        }
     }
 
 
