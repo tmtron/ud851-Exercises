@@ -127,25 +127,41 @@ public class TaskContentProvider extends ContentProvider {
 
         // DONE (2) Write URI match code and set a variable to return a Cursor
         final int match = sUriMatcher.match(uri);
+        Cursor cursor;
         // DONE (3) Query for the tasks directory and write a default case
         switch (match) {
             case TASKS:
-                final Cursor cursor = db.query(TaskEntry.TABLE_NAME
+                cursor = db.query(TaskEntry.TABLE_NAME
                         , projection
                         , selection
                         , selectionArgs
                         , null
                         , null
                         , sortOrder);
-                // DONE (4) Set a notification URI on the Cursor and return that Cursor
-                // so if any content changes in the underlying data (e.g. because some other app called insert/delete
-                // the cursor will be notified
-                final Context context = getContext();
-                if (context != null) cursor.setNotificationUri(context.getContentResolver(), uri);
-                return cursor;
+                break;
+            case TASK_WITH_ID:
+                // e,g, content://<authorit>/tasks/#
+                final String id = uri.getPathSegments().get(1);
+                final String idSelection = TaskEntry._ID+"=?";
+                final String[] idSelectionArgs = new String[]{id};
+                cursor = db.query(TaskEntry.TABLE_NAME
+                        , projection
+                        , idSelection
+                        , idSelectionArgs
+                        , null
+                        , null
+                        , null);
+                break;
 
             default:    throw new UnsupportedOperationException("Unknown Uri "+uri);
         }
+
+        // DONE (4) Set a notification URI on the Cursor and return that Cursor
+        // so if any content changes in the underlying data (e.g. because some other app called insert/delete
+        // the cursor will be notified
+        final Context context = getContext();
+        if (context != null) cursor.setNotificationUri(context.getContentResolver(), uri);
+        return cursor;
     }
 
 
