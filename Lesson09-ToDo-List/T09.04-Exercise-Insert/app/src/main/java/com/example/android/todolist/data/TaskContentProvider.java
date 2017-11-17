@@ -90,24 +90,25 @@ public class TaskContentProvider extends ContentProvider {
         // DONE (2) Write URI matching code to identify the match for the tasks directory
         final int match = sUriMatcher.match(uri);
         switch (match) {
-            case TASKS:
-                // DONE (3) Insert new values into the database
-                final long newRowId = db.insertOrThrow(TaskEntry.TABLE_NAME, null, values);
-                if (newRowId > 0) {
-                    // DONE (4) Set the value for the returnedUri and write the default case for unknown URI's
-                    Uri result = ContentUris.withAppendedId(TaskEntry.CONTENT_URI, newRowId);
-                    // DONE (5) Notify the resolver if the uri has been changed, and return the newly inserted URI
-                    final Context context = getContext();
-                    if (context != null) context.getContentResolver().notifyChange(uri, null);
-                    return result;
-                } else {
-                    throw new SQLException("Failed to insert row into " + uri);
-                }
-            default:
-                throw new UnsupportedOperationException("Not yet implemented");
+            case TASKS: return insert(uri, values, db);
+            default:    throw new UnsupportedOperationException("Not yet implemented");
         }
     }
 
+    // DONE (3) Insert new values into the database
+    private Uri insert(@NonNull Uri uri, ContentValues values, SQLiteDatabase db) {
+        final long newRowId = db.insertOrThrow(TaskEntry.TABLE_NAME, null, values);
+        if (newRowId > 0) {
+            // DONE (4) Set the value for the returnedUri and write the default case for unknown URI's
+            Uri result = ContentUris.withAppendedId(TaskEntry.CONTENT_URI, newRowId);
+            // DONE (5) Notify the resolver if the uri has been changed, and return the newly inserted URI
+            final Context context = getContext();
+            if (context != null) context.getContentResolver().notifyChange(uri, null);
+            return result;
+        } else {
+            throw new SQLException("Failed to insert row into " + uri);
+        }
+    }
 
     @Override
     public Cursor query(@NonNull Uri uri, String[] projection, String selection,
