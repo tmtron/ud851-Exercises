@@ -15,25 +15,61 @@
  */
 package com.example.android.background.sync;
 
-public class WaterReminderFirebaseJobService {
-    // TODO (3) WaterReminderFirebaseJobService should extend from JobService
+import android.content.Context;
+import android.os.AsyncTask;
 
-    // TODO (4) Override onStartJob
-        // TODO (5) By default, jobs are executed on the main thread, so make an anonymous class extending
+import com.firebase.jobdispatcher.JobParameters;
+import com.firebase.jobdispatcher.JobService;
+
+public class WaterReminderFirebaseJobService
+        // DONE (3) WaterReminderFirebaseJobService should extend from JobService
+        extends JobService {
+
+    private static AsyncTask mBackgroundTask;
+
+    // DONE (4) Override onStartJob
+    @Override
+    public boolean onStartJob(final JobParameters jobParameters) {
+        // DONE (5) By default, jobs are executed on the main thread, so make an anonymous class extending
         //  AsyncTask called mBackgroundTask.
-            // TODO (6) Override doInBackground
-                // TODO (7) Use ReminderTasks to execute the new charging reminder task you made, use
+        mBackgroundTask = new AsyncTask() {
+            // DONE (6) Override doInBackground
+            @Override
+            protected Object doInBackground(Object[] objects) {
+                // DONE (7) Use ReminderTasks to execute the new charging reminder task you made, use
                 // this service as the context (WaterReminderFirebaseJobService.this) and return null
                 // when finished.
-            // TODO (8) Override onPostExecute and called jobFinished. Pass the job parameters
+                final Context context = WaterReminderFirebaseJobService.this;
+                ReminderTasks.executeTask(context, ReminderTasks.ACTION_CHARGING_REMINDER);
+                return null;
+            }
+            // DONE (8) Override onPostExecute and called jobFinished. Pass the job parameters
             // and false to jobFinished. This will inform the JobManager that your job is done
             // and that you do not want to reschedule the job.
 
-        // TODO (9) Execute the AsyncTask
-        // TODO (10) Return true
+            @Override
+            protected void onPostExecute(Object o) {
+                jobFinished(jobParameters, false);
+            }
+        };
 
-    // TODO (11) Override onStopJob
-        // TODO (12) If mBackgroundTask is valid, cancel it
-        // TODO (13) Return true to signify the job should be retried
+        // DONE (9) Execute the AsyncTask
+        mBackgroundTask.execute();
+        // DONE (10) Return true
+        return true;
+    }
+
+    // DONE (11) Override onStopJob
+    // e.g. this may be called when we have configured the job to work only on WiFi
+    // the user may have started the job when WiFi was on and then (when the job
+    // is still running) deactivates WiFi
+    @Override
+    public boolean onStopJob(JobParameters job) {
+        // DONE (12) If mBackgroundTask is valid, cancel it
+        if (mBackgroundTask != null) mBackgroundTask.cancel(true);
+        // DONE (13) Return true to signify the job should be retried
+        // when WiFi is back, we want to retry the job
+        return true;
+    }
 
 }
